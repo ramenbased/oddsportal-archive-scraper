@@ -254,5 +254,5 @@ func main() {
 	output, err := json.Marshal(ResultsCompiled_)
 	Er(err)
 	os.WriteFile(saveAs+".json", output, 0644)
-	fmt.Printf("SUCCESS! Compiled %v rows of games", countRows)
+	fmt.Printf("SUCCESS! Compiled %v rows of games \n", countRows)
 }

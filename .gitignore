@@ -1,7 +1,7 @@
-+/readjsons
 *
 !*.*
 !*/
-
+*.sh
+*.json
 */results/*
 */readjson/*

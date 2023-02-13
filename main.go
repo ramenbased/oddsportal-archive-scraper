@@ -22,15 +22,14 @@ func scraper(url string, pagecount int, saveAs string) {
 		ctx,
 		func(ev interface{}) {
 			if ev, ok := ev.(*network.EventResponseReceived); ok {
-
 				if ev.Type != "XHR" {
 					return
 				}
-
 				if strings.Contains(ev.Response.URL, "tournament-archive") == false {
 					return
 				}
-
+				//should await not sleep
+				time.Sleep(time.Second * 2)
 				go func() {
 					c := chromedp.FromContext(ctx)
 					rbp := network.GetResponseBody(ev.RequestID)
@@ -74,7 +73,7 @@ func main() {
 
 	flag.StringVar(&url, "u", "https://www.oddsportal.com/baseball/usa/mlb-2022/results/#/page/", "URL to scrap. For now must end as /page/")
 	flag.IntVar(&pagecount, "p", 2, "Pages to scrape. MLB 2022 Season has 55 Pages")
-	flag.StringVar(&saveAs, "s", "MLB2022-", "Filename for saving")
+	flag.StringVar(&saveAs, "s", "MLB2022-", "Filename for saving.. will add 01.json")
 	flag.Parse()
 	fmt.Println("Starting...")
 	for i := 1; i <= pagecount; i++ {
