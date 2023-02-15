@@ -1,4 +1,4 @@
-#Oddsportal History Scraper
+# Oddsportal History Scraper
 
 Barebone tool to get moneyline odds from oddsportal dot com. Basically just a [chromedp](https://github.com/chromedp/chromedp) copy paste. Does not scrape bookmaker specific data. Works on my machine. Might work on windows. 
 
