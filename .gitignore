@@ -5,3 +5,4 @@
 *.json
 */results/*
 */readjson/*
+/readjson
