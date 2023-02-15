@@ -18,6 +18,16 @@ func scraper(url string, pagecount int, saveAs string) {
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
+	var filename string
+	var url_ string
+	if pagecount != 0 {
+		filename = saveAs + fmt.Sprintf("%02d", pagecount) + ".json"
+		url_ = url + fmt.Sprint(pagecount)
+	} else {
+		filename = saveAs + ".json"
+		url_ = url
+	}
+
 	chromedp.ListenTarget(
 		ctx,
 		func(ev interface{}) {
@@ -25,11 +35,11 @@ func scraper(url string, pagecount int, saveAs string) {
 				if ev.Type != "XHR" {
 					return
 				}
-				if strings.Contains(ev.Response.URL, "tournament-archive") == false {
+				if strings.Contains(ev.Response.URL, "ajax-sport-country-") == false {
 					return
 				}
 				//should await not sleep
-				time.Sleep(time.Second * 2)
+				time.Sleep(time.Second * 3)
 				go func() {
 					c := chromedp.FromContext(ctx)
 					rbp := network.GetResponseBody(ev.RequestID)
@@ -40,7 +50,6 @@ func scraper(url string, pagecount int, saveAs string) {
 						fmt.Println("RUN IT AGAIN..")
 					}
 					if err == nil {
-						filename := saveAs + fmt.Sprintf("%02d", pagecount) + ".json"
 						err := os.WriteFile(filename, body, 0644)
 						if err != nil {
 							fmt.Println(err)
@@ -56,7 +65,7 @@ func scraper(url string, pagecount int, saveAs string) {
 
 	err := chromedp.Run(ctx,
 		network.Enable(),
-		chromedp.Navigate(url+fmt.Sprint(pagecount)),
+		chromedp.Navigate(url_),
 		chromedp.Sleep(time.Second*time.Duration((10+rand.Intn(15)))),
 	)
 	if err != nil {
@@ -71,13 +80,18 @@ func main() {
 	var pagecount int
 	var saveAs string
 
-	flag.StringVar(&url, "u", "https://www.oddsportal.com/baseball/usa/mlb-2022/results/#/page/", "URL to scrap. For now must end as /page/")
-	flag.IntVar(&pagecount, "p", 2, "Pages to scrape. MLB 2022 Season has 55 Pages")
-	flag.StringVar(&saveAs, "s", "MLB2022-", "Filename for saving.. will add 01.json")
+	flag.StringVar(&url, "u", "https://www.oddsportal.com/baseball/usa/mlb-2022/results/#/page/", "URL to scrap. Must end ../page/ for yearly scrape")
+	flag.IntVar(&pagecount, "p", 2, "Pages to scrape. 0 for Sinle Page direct URL. *MLB 2022 Season has 55 Pages*")
+	flag.StringVar(&saveAs, "s", "MLB2022-", "Filename/Dir for saving.. will add 01.json")
 	flag.Parse()
 	fmt.Println("Starting...")
-	for i := 1; i <= pagecount; i++ {
-		fmt.Printf("CYCLE: %v.. TARGET: %v \n", i, url+fmt.Sprintf("%v", i))
-		scraper(url, i, saveAs)
+	if pagecount != 0 {
+		for i := 1; i <= pagecount; i++ {
+			fmt.Printf("CYCLE: %v.. TARGET: %v \n", i, url+fmt.Sprintf("%v", i))
+			scraper(url, i, saveAs)
+		}
+	} else {
+		fmt.Printf("SINGLE PAGE TARGET: %v \n", url)
+		scraper(url, pagecount, saveAs)
 	}
 }

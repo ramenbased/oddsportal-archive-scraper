@@ -149,12 +149,20 @@ func avgOddsWinner(y Year) {
 	fmt.Println("Check N", nWin, nLoss)
 }
 
+func div(y Year) {
+
+	for _, d := range y.Data {
+		fmt.Println(d.Info[0].Name)
+	}
+}
+
 func main() {
-	file, err := os.ReadFile("./MLB2006.json")
+	file, err := os.ReadFile("./../../../resources/odds/oddsportal/YearlyMLB/MLB2022.json")
 	Er(err)
 	var y Year
 	if err := json.Unmarshal(file, &y); err != nil {
 		Er(err)
 	}
-	avgOddsWinner(y)
+	div(y)
+	//avgOddsWinner(y)
 }
