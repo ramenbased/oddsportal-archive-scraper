@@ -25,6 +25,7 @@ Example.. scraping the entire 2022 season of MLB:
 ```
 
 Additional tool for parsing "per page" data into a single.json of one year containing all games (for now only baseball because it based ball).
+Supports .csv output with normalized team ID's according to retrosheet.
 
 ```bash
 cd combinejsons

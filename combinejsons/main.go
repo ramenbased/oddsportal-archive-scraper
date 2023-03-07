@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -8,6 +9,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type ResultsRaw struct {
@@ -205,18 +207,90 @@ type ResultsCompiled struct {
 	Rows []SingleRow `json:"data"`
 }
 
+func yorkTime(i int64) string {
+	loc, _ := time.LoadLocation("America/New_York")
+	t := time.Unix(i, 0)
+	return t.In(loc).Format("2006-01-02")
+}
+
+func retroTeamId(name string) string {
+	switch name {
+	case "Los Angeles Angels":
+		return "ANA"
+	case "Arizona Diamondbacks":
+		return "ARI"
+	case "Atlanta Braves":
+		return "ATL"
+	case "Baltimore Orioles":
+		return "BAL"
+	case "Boston Red Sox":
+		return "BOS"
+	case "Chicago White Sox":
+		return "CHA"
+	case "Chicago Cubs":
+		return "CHN"
+	case "Cincinnati Reds":
+		return "CIN"
+	case "Cleveland Guardians":
+		return "CLE"
+	case "Colorado Rockies":
+		return "COL"
+	case "Detroit Tigers":
+		return "DET"
+	case "Houston Astros":
+		return "HOU"
+	case "Kansas City Royals":
+		return "KCA"
+	case "Los Angeles Dodgers":
+		return "LAN"
+	case "Miami Marlins":
+		return "MIA"
+	case "Milwaukee Brewers":
+		return "MIL"
+	case "Minnesota Twins":
+		return "MIN"
+	case "New York Yankees":
+		return "NYA"
+	case "New York Mets":
+		return "NYN"
+	case "Oakland Athletics":
+		return "OAK"
+	case "Philadelphia Phillies":
+		return "PHI"
+	case "Pittsburgh Pirates":
+		return "PIT"
+	case "San Diego Padres":
+		return "SDN"
+	case "Seattle Mariners":
+		return "SEA"
+	case "San Francisco Giants":
+		return "SFN"
+	case "St.Louis Cardinals":
+		return "SLN"
+	case "Tampa Bay Rays":
+		return "TBA"
+	case "Texas Rangers":
+		return "TEX"
+	case "Toronto Blue Jays":
+		return "TOR"
+	case "Washington Nationals":
+		return "WAS"
+	default:
+		return "MISSING"
+	}
+}
+
 func main() {
 	var sourceFolder string
 	var saveAs string
-
+	var csvOut bool
 	flag.StringVar(&sourceFolder, "f", "../results/2022", "source folder with jsons")
 	flag.StringVar(&saveAs, "s", "MLB2022", "save as")
+	flag.BoolVar(&csvOut, "csv", false, "output as .csv file")
 	flag.Parse()
 
 	var ResultsCompiled_ ResultsCompiled
 	countRows := 0
-
-	// To do: Test Paths on Windows..
 
 	path := filepath.FromSlash(sourceFolder)
 	dir, err := os.ReadDir(path)
@@ -251,8 +325,36 @@ func main() {
 			}
 		}
 	}
-	output, err := json.Marshal(ResultsCompiled_)
-	Er(err)
-	os.WriteFile(saveAs+".json", output, 0644)
-	fmt.Printf("SUCCESS! Compiled %v rows of games \n", countRows)
+
+	//out json
+	if csvOut == false {
+		output, err := json.Marshal(ResultsCompiled_)
+		Er(err)
+		os.WriteFile(saveAs+".json", output, 0644)
+		fmt.Printf("SUCCESS! Compiled %v rows of games \n", countRows)
+		fmt.Println("Wrote json File")
+	}
+
+	//out csv
+	if csvOut == true {
+		file, err := os.Create(saveAs + ".csv")
+		defer file.Close()
+		Er(err)
+		writer := bufio.NewWriter(file)
+		for _, r := range ResultsCompiled_.Rows {
+			if len(r.Odds) != 0 {
+				_, err := fmt.Fprintf(writer, "%v,%v,%v,%v,%v,%v,%v,%v,%v,%v\n",
+					yorkTime(int64(r.DateStartTimestamp)),
+					retroTeamId(r.HomeName), retroTeamId(r.AwayName),
+					r.Odds[0].AvgOdds, r.Odds[0].MaxOdds,
+					r.Odds[1].AvgOdds, r.Odds[1].MaxOdds,
+					r.HomeResult, r.AwayResult,
+					r.TournamentStageName)
+				Er(err)
+			}
+		}
+		writer.Flush()
+		fmt.Printf("SUCCESS! Compiled %v rows of games \n", countRows)
+		fmt.Println("Wrote csv File")
+	}
 }
