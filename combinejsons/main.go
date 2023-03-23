@@ -276,7 +276,7 @@ func retroTeamId(name string) string {
 	case "Washington Nationals":
 		return "WAS"
 	default:
-		return "MISSING"
+		return name
 	}
 }
 
@@ -331,7 +331,7 @@ func main() {
 		output, err := json.Marshal(ResultsCompiled_)
 		Er(err)
 		os.WriteFile(saveAs+".json", output, 0644)
-		fmt.Printf("SUCCESS! Compiled %v rows of games \n", countRows)
+		fmt.Printf("Compiled %v rows of games \n", countRows)
 		fmt.Println("Wrote json File")
 	}
 
@@ -354,7 +354,7 @@ func main() {
 			}
 		}
 		writer.Flush()
-		fmt.Printf("SUCCESS! Compiled %v rows of games \n", countRows)
+		fmt.Printf("Compiled %v rows of games \n", countRows)
 		fmt.Println("Wrote csv File")
 	}
 }
