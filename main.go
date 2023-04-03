@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
+	"math"
 	"math/rand"
 	"os"
 	"strings"
@@ -13,6 +15,16 @@ import (
 	"github.com/chromedp/cdproto/network"
 	"github.com/chromedp/chromedp"
 )
+
+type PageCount struct {
+	D struct {
+		Total                int    `json:"total"`
+		OnePage              int    `json:"onePage"`
+		Page                 int    `json:"page"`
+		PaginationView       string `json:"paginationView"`
+		PaginationViewMobile string `json:"paginationViewMobile"`
+	} `json:"d"`
+}
 
 func scraper(url string, pagecount int, saveAs string) {
 	ctx, cancel := chromedp.NewContext(context.Background())
@@ -50,6 +62,14 @@ func scraper(url string, pagecount int, saveAs string) {
 						fmt.Println("RUN IT AGAIN..")
 					}
 					if err == nil {
+
+						var PageCount_ PageCount
+						if err := json.Unmarshal(body, &PageCount_); err != nil {
+							fmt.Println(err)
+						}
+						d := PageCount_.D
+						TotalPages = int(math.Ceil(float64(d.Total) / float64(d.OnePage)))
+						fmt.Printf("Scraping Page %v out of %v..\n", d.Page, TotalPages)
 						err := os.WriteFile(filename, body, 0644)
 						if err != nil {
 							fmt.Println(err)
@@ -73,25 +93,23 @@ func scraper(url string, pagecount int, saveAs string) {
 	}
 
 }
+
+var TotalPages int
+
 func main() {
 	rand.Seed(time.Now().UnixNano())
 
 	var url string
-	var pagecount int
 	var saveAs string
 
-	flag.StringVar(&url, "u", "https://www.oddsportal.com/baseball/usa/mlb-2022/results/#/page/", "URL to scrap. Must end ../page/ for yearly scrape")
-	flag.IntVar(&pagecount, "p", 2, "Pages to scrape. 0 for Sinle Page direct URL. *MLB 2022 Season has 55 Pages*")
+	flag.StringVar(&url, "u", "https://www.oddsportal.com/baseball/usa/mlb-2022/results/#/page/", "Target URL must end in ../#/page/")
 	flag.StringVar(&saveAs, "s", "MLB2022-", "Filename/Dir for saving.. will add 01.json")
 	flag.Parse()
-	fmt.Println("Starting...")
-	if pagecount != 0 {
-		for i := 1; i <= pagecount; i++ {
-			fmt.Printf("CYCLE: %v.. TARGET: %v \n", i, url+fmt.Sprintf("%v", i))
-			scraper(url, i, saveAs)
-		}
-	} else {
-		fmt.Printf("SINGLE PAGE TARGET: %v \n", url)
-		scraper(url, pagecount, saveAs)
+	fmt.Println("STARTING SCRAPER...")
+
+	TotalPages = 1
+	for i := 1; i <= TotalPages; i++ {
+		fmt.Printf("CYCLE: %v.. TARGET: %v \n", i, url+fmt.Sprintf("%v", i))
+		scraper(url, i, saveAs)
 	}
 }

@@ -1,16 +1,15 @@
 # Oddsportal History Scraper
 
-Barebone tool to get moneyline odds from oddsportal dot com. Basically just a [chromedp](https://github.com/chromedp/chromedp) copy paste. Does not scrape bookmaker specific data. Works on my machine. Might work on windows. 
+Barebone tool to get moneyline odds from oddsportal dot com using [chromedp](https://github.com/chromedp/chromedp). Does not scrape bookmaker specific data.  
 
-I've seen most repos got rekt and are abandoned so i'm publishing this... 
-
-Get [Go](https://go.dev).
+Get [Go](https://go.dev)
 
 ```bash
 git clone https://github.com/ramenbased/oddsportal-archive-scraper
 ```
 
 ```bash
+cd oddsportal-archive-scraper
 go build
 ./oddsportalhistory -h
 
@@ -21,7 +20,7 @@ Use flags to instruct it.
 Example.. scraping the entire 2022 season of MLB:
 
 ```bash
-./oddsportalhistory -u "https://www.oddsportal.com/baseball/usa/mlb-2022/results/#/page/" -p 55 -s "MLB2022-"
+./oddsportalhistory -u "https://www.oddsportal.com/baseball/usa/mlb-2022/results/#/page/" -s "MLB2022-"
 ```
 
 Additional tool for parsing "per page" data into a single.json of one year containing all games (for now only baseball because it based ball).
